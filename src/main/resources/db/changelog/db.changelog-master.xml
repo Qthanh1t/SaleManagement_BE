@@ -7,4 +7,5 @@
 
     <include file="db/changelog/001-create-initial-schema.xml"/>
     <include file="db/changelog/002-create-product-schema.xml"/>
+    <include file="db/changelog/003-create-order-schema.xml"/>
 </databaseChangeLog>

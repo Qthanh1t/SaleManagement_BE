@@ -2,9 +2,13 @@ package com.example.SaleManagement.controller;
 
 import com.example.SaleManagement.model.Order;
 import com.example.SaleManagement.payload.order.OrderCreateRequest;
+import com.example.SaleManagement.payload.order.OrderDTO;
 import com.example.SaleManagement.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,5 +30,17 @@ public class OrderController {
         return new ResponseEntity<>(order.getId(), HttpStatus.CREATED); // Chỉ cần trả về ID
     }
 
-    // (Thêm API GET /orders và GET /orders/{id} nếu cần)
+    // Lấy danh sách (Cả Admin và Sales)
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SALES_STAFF')")
+    public Page<OrderDTO> getAllOrders(@PageableDefault(size = 10, sort = "orderDate") Pageable pageable) {
+        return orderService.getAllOrders(pageable);
+    }
+
+    // Lấy chi tiết (Cả Admin và Sales)
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SALES_STAFF')")
+    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
 }

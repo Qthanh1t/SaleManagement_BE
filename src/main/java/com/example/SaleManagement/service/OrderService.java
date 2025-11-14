@@ -4,9 +4,12 @@ import com.example.SaleManagement.exception.InsufficientStockException;
 import com.example.SaleManagement.exception.ResourceNotFoundException;
 import com.example.SaleManagement.model.*;
 import com.example.SaleManagement.payload.order.OrderCreateRequest;
+import com.example.SaleManagement.payload.order.OrderDTO;
 import com.example.SaleManagement.payload.order.OrderItemRequest;
 import com.example.SaleManagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,5 +99,21 @@ public class OrderService {
         // Nhờ `cascade = CascadeType.ALL` trên Order,
         // khi save Order, các OrderDetail cũng tự động được save.
         return orderRepository.save(order);
+    }
+
+    // Lấy danh sách (có join fetch để tránh N+1)
+    @Transactional(readOnly = true) // Giao dịch chỉ đọc
+    public Page<OrderDTO> getAllOrders(Pageable pageable) {
+        // Cần join fetch để lấy customer và user (tránh N+1 query)
+        Page<Order> orderPage = orderRepository.findAllWithCustomerAndUser(pageable);
+        return orderPage.map(OrderDTO::fromEntity); // Dùng map của Page
+    }
+
+    // Lấy chi tiết 1 đơn
+    @Transactional(readOnly = true)
+    public OrderDTO getOrderById(Long id) {
+        Order order = orderRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        return OrderDTO.fromEntity(order);
     }
 }

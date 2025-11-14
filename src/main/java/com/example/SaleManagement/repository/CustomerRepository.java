@@ -13,6 +13,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // Tìm theo SĐT (dùng cho autocomplete)
     List<Customer> findByPhoneNumberContaining(String phoneNumber);
     Optional<Customer> findByPhoneNumber(String phoneNumber);
+    Boolean existsByPhoneNumber(String phoneNumber);
+    Boolean existsByPhoneNumberAndIdNot(String phoneNumber, Long id);
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt >= :startDate")
     Long countNewCustomersSince(@Param("startDate") Instant startDate);
 }

@@ -16,4 +16,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Đếm tổng số đơn hàng trong 1 khoảng thời gian
     @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate >= :startDate")
     Long countOrdersSince(@Param("startDate") Instant startDate);
+
+    Boolean existsByCustomerId(Long customerId);
 }

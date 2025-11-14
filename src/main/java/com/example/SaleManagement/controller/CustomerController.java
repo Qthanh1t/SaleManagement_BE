@@ -4,6 +4,9 @@ import com.example.SaleManagement.payload.CustomerDTO;
 import com.example.SaleManagement.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +22,11 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    @GetMapping
+    public Page<CustomerDTO> getAllCustomers(@PageableDefault(size = 10) Pageable pageable) {
+        return customerService.getAllCustomers(pageable);
+    }
+
     // API để tìm kiếm (autocomplete)
     @GetMapping("/search")
     public List<CustomerDTO> searchCustomers(@RequestParam String phone) {
@@ -29,5 +37,17 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<CustomerDTO> createCustomer(@Valid @RequestBody CustomerDTO customerDTO) {
         return new ResponseEntity<>(customerService.createCustomer(customerDTO), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerDTO customerDTO) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, customerDTO));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+        return ResponseEntity.ok("Xóa khách hàng thành công");
     }
 }

@@ -27,4 +27,6 @@ public class ProductRequest {
     @NotNull(message = "Tồn kho không được để trống")
     @Min(value = 0, message = "Tồn kho phải lớn hơn hoặc bằng 0")
     private Integer initialStock;
+
+    private String imageUrl;
 }

@@ -35,6 +35,7 @@ public class ProductService {
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())
                 .stockQuantity(product.getInventory() != null ? product.getInventory().getQuantity() : 0)
+                .imageUrl(product.getImageUrl())
                 .build();
     }
 
@@ -83,6 +84,7 @@ public class ProductService {
         product.setDescription(productRequest.getDescription());
         product.setPrice(productRequest.getPrice());
         product.setCategory(category);
+        product.setImageUrl(productRequest.getImageUrl());
 
         // Tạo Inventory
         Inventory inventory = new Inventory();
@@ -108,6 +110,7 @@ public class ProductService {
         product.setDescription(productRequest.getDescription());
         product.setPrice(productRequest.getPrice());
         product.setCategory(category);
+        product.setImageUrl(productRequest.getImageUrl());
 
         // Cập nhật inventory
         Inventory inventory = product.getInventory();

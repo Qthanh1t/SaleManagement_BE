@@ -15,4 +15,5 @@ public class ProductDTO {
     private Long categoryId;
     private String categoryName;
     private Integer stockQuantity; // Số lượng tồn kho
+    private String imageUrl;
 }

@@ -113,8 +113,8 @@ public class ProductService {
         product.setImageUrl(productRequest.getImageUrl());
 
         // Cập nhật inventory
-        Inventory inventory = product.getInventory();
-        inventory.setQuantity(productRequest.getInitialStock());
+        //Inventory inventory = product.getInventory();
+        //inventory.setQuantity(productRequest.getInitialStock());
 
         Product updatedProduct = productRepository.save(product);
         return toDTO(updatedProduct);

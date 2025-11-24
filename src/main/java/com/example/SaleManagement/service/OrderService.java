@@ -1,6 +1,7 @@
 package com.example.SaleManagement.service;
 
 import com.example.SaleManagement.exception.InsufficientStockException;
+import com.example.SaleManagement.exception.ResourceConflictException;
 import com.example.SaleManagement.exception.ResourceNotFoundException;
 import com.example.SaleManagement.model.*;
 import com.example.SaleManagement.payload.order.OrderCreateRequest;
@@ -115,5 +116,37 @@ public class OrderService {
         Order order = orderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         return OrderDTO.fromEntity(order);
+    }
+
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        // 1. Tìm đơn hàng
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+
+        // 2. Kiểm tra trạng thái
+        if ("CANCELLED".equals(order.getStatus())) {
+            throw new ResourceConflictException("Đơn hàng này đã bị hủy trước đó.");
+        }
+
+        // (Tùy chọn: Chặn hủy nếu đơn hàng quá cũ, ví dụ quá 3 ngày)
+
+        // 3. Cập nhật trạng thái
+        order.setStatus("CANCELLED");
+        orderRepository.save(order);
+
+        // 4. Hoàn kho (Trả hàng)
+        for (OrderDetail detail : order.getOrderDetails()) {
+            Long productId = detail.getProduct().getId();
+
+            // Dùng Pessimistic Lock để đảm bảo an toàn khi cộng kho
+            Inventory inventory = inventoryRepository.findByIdWithPessimisticLock(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Inventory", "productId", productId));
+
+            // Cộng lại số lượng
+            int newQuantity = inventory.getQuantity() + detail.getQuantity();
+            inventory.setQuantity(newQuantity);
+            inventoryRepository.save(inventory);
+        }
     }
 }

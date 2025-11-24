@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
@@ -49,5 +51,11 @@ public class ProductController {
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Xóa sản phẩm thành công");
+    }
+
+    @GetMapping("/low-stock")
+    @PreAuthorize("isAuthenticated()") // Ai đăng nhập cũng xem được
+    public List<ProductDTO> getLowStockProducts(@RequestParam(defaultValue = "5") int threshold) {
+        return productService.getLowStockProducts(threshold);
     }
 }

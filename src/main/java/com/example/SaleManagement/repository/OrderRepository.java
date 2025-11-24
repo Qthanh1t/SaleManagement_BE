@@ -35,4 +35,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "JOIN FETCH od.product " +
             "WHERE o.id = :id")
     Optional<Order> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = 'COMPLETED'")
+    BigDecimal findTotalRevenueBetween(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = 'COMPLETED'")
+    Long countOrdersBetween(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }

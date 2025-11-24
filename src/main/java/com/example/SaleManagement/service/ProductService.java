@@ -15,6 +15,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ProductService {
 
@@ -126,5 +129,12 @@ public class ProductService {
         // Cần kiểm tra xem có đơn hàng nào dùng product này không trước khi xóa
         // (Sẽ implement ở Milestone 3, giờ cứ xóa)
         productRepository.delete(product);
+    }
+
+    public List<ProductDTO> getLowStockProducts(int threshold) {
+        return productRepository.findLowStockProducts(threshold)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 }

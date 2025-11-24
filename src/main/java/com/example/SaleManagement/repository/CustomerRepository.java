@@ -17,4 +17,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Boolean existsByPhoneNumberAndIdNot(String phoneNumber, Long id);
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt >= :startDate")
     Long countNewCustomersSince(@Param("startDate") Instant startDate);
+
+    @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt BETWEEN :startDate AND :endDate")
+    Long countNewCustomersBetween(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }

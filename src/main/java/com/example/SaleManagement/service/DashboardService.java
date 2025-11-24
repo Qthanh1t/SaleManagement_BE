@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -27,26 +28,32 @@ public class DashboardService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    public DashboardStatsDTO getDashboardStats() {
+    public DashboardStatsDTO getDashboardStats(LocalDate startDate, LocalDate endDate) {
 
-        // Lấy thời điểm 00:00:00 của ngày hôm nay
-        Instant startOfToday = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+        // Chuyển LocalDate -> Instant (UTC)
+        // Start: 00:00:00 của ngày bắt đầu
+        Instant startInstant = startDate.atStartOfDay().toInstant(ZoneOffset.UTC);
 
-        // 1. Lấy thống kê từ OrderRepo
-        BigDecimal totalRevenueToday = orderRepository.findTotalRevenueSince(startOfToday);
-        Long totalOrdersToday = orderRepository.countOrdersSince(startOfToday);
+        // End: 23:59:59.999999999 của ngày kết thúc
+        Instant endInstant = endDate.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
 
-        // 2. Lấy thống kê từ CustomerRepo
-        Long newCustomersToday = customerRepository.countNewCustomersSince(startOfToday);
+        // 1. Doanh thu
+        BigDecimal revenue = orderRepository.findTotalRevenueBetween(startInstant, endInstant);
 
-        // 3. Lấy top 5 sản phẩm từ OrderDetailRepo
-        List<TopProductDTO> topProducts = orderDetailRepository.findTopSellingProducts(PageRequest.of(0, 5));
+        // 2. Số đơn
+        Long orders = orderRepository.countOrdersBetween(startInstant, endInstant);
 
-        // 4. Build DTO và trả về
+        // 3. Khách mới
+        Long newCustomers = customerRepository.countNewCustomersBetween(startInstant, endInstant);
+
+        // 4. Top sản phẩm
+        List<TopProductDTO> topProducts = orderDetailRepository.findTopSellingProductsBetween(
+                startInstant, endInstant, PageRequest.of(0, 5));
+
         return DashboardStatsDTO.builder()
-                .totalRevenueToday(totalRevenueToday)
-                .totalOrdersToday(totalOrdersToday)
-                .newCustomersToday(newCustomersToday)
+                .totalRevenueToday(revenue) // Tên field DTO hơi cũ (Today), nhưng ta cứ tái sử dụng
+                .totalOrdersToday(orders)
+                .newCustomersToday(newCustomers)
                 .topSellingProducts(topProducts)
                 .build();
     }

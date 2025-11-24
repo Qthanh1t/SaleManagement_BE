@@ -6,6 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 // Thêm JpaSpecificationExecutor để tìm kiếm động
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
@@ -18,4 +21,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query(value = "SELECT p FROM Product p JOIN FETCH p.category JOIN FETCH p.inventory",
             countQuery = "SELECT count(p) FROM Product p")
     Page<Product> findAllWithDetails(Pageable pageable);
+
+    @Query("SELECT p FROM Product p JOIN p.inventory i WHERE i.quantity <= :threshold")
+    List<Product> findLowStockProducts(@Param("threshold") int threshold);
 }

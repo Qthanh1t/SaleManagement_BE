@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -46,5 +47,21 @@ public class AuthController {
         String role = user.getRole().getName();
 
         return ResponseEntity.ok(new LoginResponse(jwt, user.getEmail(), user.getFullName(), role));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<LoginResponse> getCurrentUser() {
+        // 1. Lấy email từ SecurityContext (đã được JwtAuthenticationFilter xác thực và đặt vào đây)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        // 2. Tìm user trong DB để lấy thông tin mới nhất (Role, FullName...)
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + email));
+
+        String role = user.getRole().getName();
+
+        // 3. Trả về thông tin. Token để null vì Client đã có token rồi.
+        return ResponseEntity.ok(new LoginResponse(null, user.getEmail(), user.getFullName(), role));
     }
 }

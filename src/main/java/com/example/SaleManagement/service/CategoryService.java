@@ -1,9 +1,11 @@
 package com.example.SaleManagement.service;
 
+import com.example.SaleManagement.exception.ResourceConflictException;
 import com.example.SaleManagement.exception.ResourceNotFoundException;
 import com.example.SaleManagement.model.Category;
 import com.example.SaleManagement.payload.CategoryDTO;
 import com.example.SaleManagement.repository.CategoryRepository;
+import com.example.SaleManagement.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ public class CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
     // --- Helper (Mapper) ---
     private CategoryDTO toDTO(Category category) {
@@ -57,8 +61,11 @@ public class CategoryService {
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
-        // Cần kiểm tra xem có sản phẩm nào dùng category này không trước khi xóa
-        // (Sẽ implement ở Milestone 3, giờ cứ xóa)
+
+        if(productRepository.existsByCategoryId(id)) {
+            throw new ResourceConflictException("Không thể xóa danh mục đang chứa sản phẩm");
+        }
+
         categoryRepository.delete(category);
     }
 }

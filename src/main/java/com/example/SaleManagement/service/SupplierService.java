@@ -1,8 +1,10 @@
 package com.example.SaleManagement.service;
 
+import com.example.SaleManagement.exception.ResourceConflictException;
 import com.example.SaleManagement.exception.ResourceNotFoundException;
 import com.example.SaleManagement.model.Supplier;
 import com.example.SaleManagement.payload.SupplierDTO;
+import com.example.SaleManagement.repository.GoodsReceiptRepository;
 import com.example.SaleManagement.repository.SupplierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,8 @@ public class SupplierService {
 
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private GoodsReceiptRepository goodsReceiptRepository;
 
     private SupplierDTO toDTO(Supplier s) {
         SupplierDTO dto = new SupplierDTO();
@@ -54,7 +58,11 @@ public class SupplierService {
     public void deleteSupplier(Long id) {
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
-        // (Sau này cần check xem NCC có phiếu nhập nào không)
+
+        if(goodsReceiptRepository.existsBySupplierId(id)) {
+            throw new ResourceConflictException("Không thể xóa nhà cung cấp đã có lịch sử nhập hàng.");
+        }
+
         supplierRepository.delete(supplier);
     }
 }

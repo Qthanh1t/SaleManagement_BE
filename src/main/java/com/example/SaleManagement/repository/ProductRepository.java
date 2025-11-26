@@ -21,6 +21,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query(value = "SELECT p FROM Product p JOIN FETCH p.category JOIN FETCH p.inventory",
             countQuery = "SELECT count(p) FROM Product p")
     Page<Product> findAllWithDetails(Pageable pageable);
+    boolean existsByCategoryId(Long categoryId);
 
     @Query("SELECT p FROM Product p JOIN p.inventory i WHERE i.quantity <= :threshold")
     List<Product> findLowStockProducts(@Param("threshold") int threshold);

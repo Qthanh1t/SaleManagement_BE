@@ -27,8 +27,9 @@ public class ProductController {
     @PreAuthorize("isAuthenticated()")
     public Page<ProductDTO> getAllProducts(
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @RequestParam(required = false) Long categoryId,
             @PageableDefault(page = 0, size = 10, sort = "name") Pageable pageable) {
-        return productService.getAllProducts(search, pageable);
+        return productService.getAllProducts(search, pageable, categoryId);
     }
 
     // Chỉ Admin được tạo

@@ -8,6 +8,7 @@ import com.example.SaleManagement.payload.ProductDTO;
 import com.example.SaleManagement.payload.ProductRequest;
 import com.example.SaleManagement.repository.CategoryRepository;
 import com.example.SaleManagement.repository.ProductRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,34 +46,39 @@ public class ProductService {
 
     // --- Specification (Search) ---
     // Hàm này tạo 1 query động để tìm theo tên hoặc sku
-    public static Specification<Product> searchByKeyword(String keyword) {
+    public static Specification<Product> searchByKeyword(String keyword, Long categoryId) {
         return (root, query, cb) -> {
-            // (Chỉ fetch nếu là query đếm số lượng, tránh lỗi cú pháp)
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.isEmpty()) {
+                String likePattern = "%" + keyword.toLowerCase() + "%";
+
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), likePattern),
+                        cb.like(cb.lower(root.get("sku")), likePattern)
+                ));
+            }
+
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+
+            query.distinct(true);
+            // Lưu ý: Chỉ fetch nếu query là select (để tránh lỗi khi count)
             if (Long.class != query.getResultType()) {
                 root.fetch("category");
                 root.fetch("inventory");
-                query.distinct(true); // Thêm distinct để tránh trùng lặp khi join
             }
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return cb.conjunction();
-            }
-            String likePattern = "%" + keyword.toLowerCase() + "%";
-            // Join fetch để lấy luôn category và inventory
-//            query.distinct(true);
-//            root.fetch("category");
-//            root.fetch("inventory");
 
-            return cb.or(
-                    cb.like(cb.lower(root.get("name")), likePattern),
-                    cb.like(cb.lower(root.get("sku")), likePattern)
-            );
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
     // --- End Specification ---
 
 
-    public Page<ProductDTO> getAllProducts(String search, Pageable pageable) {
-        Specification<Product> spec = searchByKeyword(search);
+    public Page<ProductDTO> getAllProducts(String search, Pageable pageable, Long categoryId) {
+        Specification<Product> spec = searchByKeyword(search, categoryId);
         return productRepository.findAll(spec, pageable).map(this::toDTO);
     }
 

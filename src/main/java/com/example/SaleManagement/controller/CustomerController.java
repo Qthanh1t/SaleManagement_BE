@@ -23,8 +23,10 @@ public class CustomerController {
     private CustomerService customerService;
 
     @GetMapping
-    public Page<CustomerDTO> getAllCustomers(@PageableDefault(size = 10) Pageable pageable) {
-        return customerService.getAllCustomers(pageable);
+    public Page<CustomerDTO> getAllCustomers(
+            @RequestParam(value = "search", required = false, defaultValue = "") String search,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return customerService.getAllCustomers(search, pageable);
     }
 
     // API để tìm kiếm (autocomplete)

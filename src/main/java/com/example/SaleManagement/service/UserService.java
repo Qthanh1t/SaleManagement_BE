@@ -73,4 +73,16 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
+
+    @Transactional
+    public void toggleUserStatus(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        // Đảo ngược trạng thái: Nếu đang Active -> Inactive và ngược lại
+        // Điều này giúp bạn có thể khôi phục nhân viên cũ nếu họ quay lại làm việc
+        user.setIsActive(!user.getIsActive());
+
+        userRepository.save(user);
+    }
 }

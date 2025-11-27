@@ -100,4 +100,16 @@ public class CustomerService {
 
         customerRepository.delete(customer);
     }
+
+    @Transactional
+    public void toggleCustomerStatus(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        // Đảo ngược trạng thái: Nếu đang Active -> Inactive và ngược lại
+        // Điều này giúp bạn có thể khôi phục nhân viên cũ nếu họ quay lại làm việc
+        customer.setIsActive(!customer.getIsActive());
+
+        customerRepository.save(customer);
+    }
 }

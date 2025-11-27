@@ -32,6 +32,12 @@ public class ProductController {
         return productService.getAllProducts(search, pageable, categoryId);
     }
 
+    @GetMapping("/search-active")
+    @PreAuthorize("isAuthenticated()") // Sales, Admin, Warehouse đều cần dùng
+    public List<ProductDTO> searchActiveProducts(@RequestParam(defaultValue = "") String keyword) {
+        return productService.searchActiveProducts(keyword);
+    }
+
     // Chỉ Admin được tạo
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -44,6 +50,14 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest productRequest) {
         return ResponseEntity.ok(productService.updateProduct(id, productRequest));
+    }
+
+    // Chỉ Admin được sửa
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> toggleProductStatus(@PathVariable Long id) {
+        productService.toggleProductStatus(id);
+        return ResponseEntity.ok("Đổi trạng thái sản phẩm thành công");
     }
 
     // Chỉ Admin được xóa

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SupplierService {
@@ -64,5 +65,17 @@ public class SupplierService {
         }
 
         supplierRepository.delete(supplier);
+    }
+
+    @Transactional
+    public void toggleSupplierStatus(Long id) {
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+
+        // Đảo ngược trạng thái: Nếu đang Active -> Inactive và ngược lại
+        // Điều này giúp bạn có thể khôi phục nhân viên cũ nếu họ quay lại làm việc
+        supplier.setIsActive(!supplier.getIsActive());
+
+        supplierRepository.save(supplier);
     }
 }

@@ -25,4 +25,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT p FROM Product p JOIN p.inventory i WHERE i.quantity <= :threshold")
     List<Product> findLowStockProducts(@Param("threshold") int threshold);
+
+    @Query("SELECT p FROM Product p " +
+            "WHERE p.isActive = true " +  // Chỉ lấy sản phẩm đang hoạt động
+            "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "     OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Product> searchActiveProducts(@Param("keyword") String keyword, Pageable pageable);
 }

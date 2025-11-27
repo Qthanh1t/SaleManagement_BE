@@ -33,6 +33,9 @@ public class User {
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true; // Mặc định là true
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();

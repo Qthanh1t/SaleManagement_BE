@@ -11,6 +11,7 @@ import com.example.SaleManagement.repository.*;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -88,6 +89,18 @@ public class ProductService {
         return productRepository.findAll(spec, pageable).map(this::toDTO);
     }
 
+    public List<ProductDTO> searchActiveProducts(String keyword) {
+        if (keyword == null) keyword = "";
+
+        // Giới hạn chỉ lấy 10 kết quả tốt nhất để hiển thị trên dropdown
+        Pageable limit = PageRequest.of(0, 10);
+
+        return productRepository.searchActiveProducts(keyword, limit)
+                .stream()
+                .map(this::toDTO) // Tái sử dụng hàm toDTO có sẵn
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ProductDTO createProduct(ProductRequest productRequest) {
         Category category = categoryRepository.findById(productRequest.getCategoryId())
@@ -156,5 +169,17 @@ public class ProductService {
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void toggleProductStatus(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
+
+        // Đảo ngược trạng thái: Nếu đang Active -> Inactive và ngược lại
+        // Điều này giúp bạn có thể khôi phục nhân viên cũ nếu họ quay lại làm việc
+        product.setIsActive(!product.getIsActive());
+
+        productRepository.save(product);
     }
 }

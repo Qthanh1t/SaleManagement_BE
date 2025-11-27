@@ -36,4 +36,12 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("Xóa nhân viên thành công");
     }
+
+    // Chỉ Admin được sửa
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> toggleUserStatus(@PathVariable Long id) {
+        userService.toggleUserStatus(id);
+        return ResponseEntity.ok("Đổi trạng thái nhân viên thành công");
+    }
 }

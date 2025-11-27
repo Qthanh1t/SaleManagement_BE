@@ -1,13 +1,13 @@
 package com.example.SaleManagement.service;
 
+import com.example.SaleManagement.exception.ResourceConflictException;
 import com.example.SaleManagement.exception.ResourceNotFoundException;
 import com.example.SaleManagement.model.Category;
 import com.example.SaleManagement.model.Inventory;
 import com.example.SaleManagement.model.Product;
 import com.example.SaleManagement.payload.ProductDTO;
 import com.example.SaleManagement.payload.ProductRequest;
-import com.example.SaleManagement.repository.CategoryRepository;
-import com.example.SaleManagement.repository.ProductRepository;
+import com.example.SaleManagement.repository.*;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +28,12 @@ public class ProductService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private GoodsReceiptDetailRepository goodsReceiptDetailRepository;
 
     // --- Helper (Mapper) ---
     private ProductDTO toDTO(Product product) {
@@ -133,8 +139,15 @@ public class ProductService {
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-        // Cần kiểm tra xem có đơn hàng nào dùng product này không trước khi xóa
-        // (Sẽ implement ở Milestone 3, giờ cứ xóa)
+        // CHECK 1: Đã từng bán chưa?
+        if (orderDetailRepository.existsByProductId(id)) {
+            throw new ResourceConflictException("Không thể xóa sản phẩm đã có lịch sử đơn hàng.");
+        }
+
+        // CHECK 2: Đã từng nhập kho chưa?
+        if (goodsReceiptDetailRepository.existsByProductId(id)) {
+            throw new ResourceConflictException("Không thể xóa sản phẩm đã có lịch sử nhập kho.");
+        }
         productRepository.delete(product);
     }
 

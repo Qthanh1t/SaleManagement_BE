@@ -30,4 +30,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     List<TopProductDTO> findTopSellingProductsBetween(@Param("startDate") Instant startDate,
                                                       @Param("endDate") Instant endDate,
                                                       Pageable pageable);
+
+    boolean existsByProductId(Long productId);
 }

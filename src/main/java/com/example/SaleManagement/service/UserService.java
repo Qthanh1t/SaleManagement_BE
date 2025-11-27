@@ -6,8 +6,7 @@ import com.example.SaleManagement.payload.UserCreateRequest;
 import com.example.SaleManagement.model.Role;
 import com.example.SaleManagement.model.User;
 import com.example.SaleManagement.payload.UserDTO;
-import com.example.SaleManagement.repository.RoleRepository;
-import com.example.SaleManagement.repository.UserRepository;
+import com.example.SaleManagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +20,9 @@ public class UserService {
     @Autowired private UserRepository userRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private PasswordEncoder passwordEncoder; // Inject từ SecurityConfig
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private GoodsReceiptRepository goodsReceiptRepository;
+    @Autowired private StockAdjustmentRepository stockAdjustmentRepository;
 
     public Page<UserDTO> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(UserDTO::fromEntity);
@@ -55,8 +57,20 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User", "id", id);
         }
-        // Nên check xem user này có đơn hàng/phiếu nhập không trước khi xóa
-        // Ở đây xóa tạm thời
+        // CHECK 1: Có đơn hàng bán ra không?
+        if (orderRepository.existsByUserId(id)) {
+            throw new ResourceConflictException("Không thể xóa nhân viên đã từng tạo đơn hàng.");
+        }
+
+        // CHECK 2: Có phiếu nhập kho không?
+        if (goodsReceiptRepository.existsByUserId(id)) {
+            throw new ResourceConflictException("Không thể xóa nhân viên đã từng nhập kho.");
+        }
+
+        // CHECK 3: Có phiếu kiểm kho không?
+        if (stockAdjustmentRepository.existsByUserId(id)) {
+            throw new ResourceConflictException("Không thể xóa nhân viên đã từng kiểm kê kho.");
+        }
         userRepository.deleteById(id);
     }
 }

@@ -41,4 +41,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = 'COMPLETED'")
     Long countOrdersBetween(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
+
+    boolean existsByUserId(Long userId);
 }

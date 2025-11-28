@@ -16,4 +16,5 @@ public class ProductDTO {
     private String categoryName;
     private Integer stockQuantity; // Số lượng tồn kho
     private String imageUrl;
+    private Boolean isActive;
 }

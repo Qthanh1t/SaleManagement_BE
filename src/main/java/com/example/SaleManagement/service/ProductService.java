@@ -47,6 +47,7 @@ public class ProductService {
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())
                 .stockQuantity(product.getInventory() != null ? product.getInventory().getQuantity() : 0)
+                .isActive(product.getIsActive())
                 .imageUrl(product.getImageUrl())
                 .build();
     }
@@ -89,6 +90,7 @@ public class ProductService {
         return productRepository.findAll(spec, pageable).map(this::toDTO);
     }
 
+    @Transactional
     public List<ProductDTO> searchActiveProducts(String keyword) {
         if (keyword == null) keyword = "";
 

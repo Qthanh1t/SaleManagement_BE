@@ -10,6 +10,7 @@ public class UserDTO {
     private String email;
     private String roleName;
     private Long roleId;
+    private Boolean isActive;
 
     public static UserDTO fromEntity(User user) {
         UserDTO dto = new UserDTO();
@@ -18,6 +19,7 @@ public class UserDTO {
         dto.setEmail(user.getEmail());
         dto.setRoleName(user.getRole().getName());
         dto.setRoleId(user.getRole().getId());
+        dto.setIsActive(user.getIsActive());
         return dto;
     }
 }

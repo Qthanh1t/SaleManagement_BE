@@ -166,6 +166,7 @@ public class ProductService {
         productRepository.delete(product);
     }
 
+    @Transactional
     public List<ProductDTO> getLowStockProducts(int threshold) {
         return productRepository.findLowStockProducts(threshold)
                 .stream()
